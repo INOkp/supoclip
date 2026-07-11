@@ -9,11 +9,14 @@ with an API key) so that a leaked key cannot be used to create more keys.
 import logging
 
 from fastapi import APIRouter, Depends, HTTPException, Request
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...auth_headers import get_authenticated_user_id
 from ...config import get_config
 from ...database import get_db
+from ...models import User
+from ...services.api_key_email_service import ApiKeyEmailService
 from ...services.api_key_service import ApiKeyLimitExceeded, ApiKeyService
 
 logger = logging.getLogger(__name__)
@@ -54,6 +57,31 @@ async def create_api_key(request: Request, db: AsyncSession = Depends(get_db)):
     except Exception as exc:  # pragma: no cover - defensive
         logger.error("Error creating API key: %s", exc)
         raise HTTPException(status_code=500, detail="Error creating API key")
+
+    try:
+        user_result = await db.execute(select(User).where(User.id == user_id))
+        user = user_result.scalar_one_or_none()
+        email_service = ApiKeyEmailService(get_config())
+        if not user:
+            logger.warning(
+                "API key %s was created but user %s could not be loaded for notification",
+                created.get("id"),
+                user_id,
+            )
+        elif not email_service.is_configured:
+            logger.warning(
+                "API key %s was created for user %s but SES is not configured",
+                created.get("id"),
+                user_id,
+            )
+        else:
+            await email_service.send_created_email(user, created)
+    except Exception:
+        logger.exception(
+            "Failed to send API key creation email for key %s and user %s",
+            created.get("id"),
+            user_id,
+        )
 
     return {"api_key": created, "message": "API key created. Copy it now — it won't be shown again."}
 
