@@ -56,6 +56,7 @@ import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/comp
 import { Progress } from "@/components/ui/progress";
 import Link from "next/link";
 import DynamicVideoPlayer from "@/components/dynamic-video-player";
+import { TranscriptPreview } from "@/components/transcript-preview";
 
 interface Clip {
   id: string;
@@ -899,10 +900,7 @@ export default function TaskPage() {
                             </div>
                           </div>
                           {clip.text && (
-                            <div className="mb-4">
-                              <h4 className="font-medium text-black mb-2">Transcript</h4>
-                              <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded">{clip.text}</p>
-                            </div>
+                            <TranscriptPreview text={clip.text} clipTitle={`Clip ${clip.clip_order}`} />
                           )}
                           <Button size="sm" variant="outline" asChild>
                             <a href={getClipUrl(clip.video_url)} download={clip.filename}>
@@ -1270,10 +1268,7 @@ export default function TaskPage() {
                       )}
 
                       {clip.text && (
-                        <div className="mb-4">
-                          <h4 className="font-medium text-black mb-2">Transcript</h4>
-                          <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded">{clip.text}</p>
-                        </div>
+                        <TranscriptPreview text={clip.text} clipTitle={`Clip ${clip.clip_order}`} />
                       )}
 
                       <div className="flex items-center gap-2">
