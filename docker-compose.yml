@@ -18,7 +18,7 @@ services:
         - NEXT_PUBLIC_DATAFAST_ALLOW_LOCALHOST=${NEXT_PUBLIC_DATAFAST_ALLOW_LOCALHOST:-false}
     container_name: supoclip-frontend
     ports:
-      - "3107:3107"
+      - "127.0.0.1:3107:3107"
     volumes:
       - ./frontend/src:/app/src
       - ./frontend/public:/app/public
@@ -244,7 +244,7 @@ services:
     image: redis:7-alpine
     container_name: supoclip-redis
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     environment:
       - REDIS_PASSWORD=${REDIS_PASSWORD:-}
     command:
